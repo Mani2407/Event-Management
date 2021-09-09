@@ -2,7 +2,7 @@
 session_start();
 include('./db/db.php');
 include('./functions/functions.php');
-if (!isset($_SESSION['user'])) {
+if (!isset($_SESSION['userId'])) {
   echo "<script> window.open('login.php','_self')</script>";
 }
 ?>
@@ -25,10 +25,12 @@ if (!isset($_SESSION['user'])) {
         $runEvent = mysqli_query($conn, $getEvent);
         $rowEvent = mysqli_fetch_array($runEvent);
         $name = $rowEvent['name'];
+        $price=$rowEvent['price'];
+        $hours=$rowEvent['duration'];
       }
       ?>
-      <form action="#" method="post" enctype="multipart/form-data">
-        <h4>Book <span class="green-text"><?php echo $name; ?></span> Event</h4>
+      <form action="payment.php" method="post" enctype="multipart/form-data">
+        <h4>Book <span class="green-text"><?php echo $name; ?></span> Event- Price C$<?php echo strval($price) ." for ".strval($hours)." hours"; ?></h4>
         <div class="input-field col s6">
           <div class="switch">
             <label>
@@ -41,11 +43,11 @@ if (!isset($_SESSION['user'])) {
             <div class="input-field col s12">
               <div class="row" id="dates">
                 <div class="input-field col s12" id="fromDateDiv">
-                  <input type="date" name="fromDate" id="fromDate">
+                  <input type="date" name="fromDate" id="fromDate" required="required">
                   <label for="fromDate">Date</label>
                 </div>
                 <div class="input-field col s6" id="toDateDiv" style="display: none;">
-                  <input type="date" name="toDate" id="toDate">
+                  <input type="date" name="toDate" id="toDate" onchange="price()">
                   <label for="toDate">To Date</label>
                 </div>
               </div>
@@ -53,15 +55,46 @@ if (!isset($_SESSION['user'])) {
           </div>
           <div class="input-field col s12">
             <textarea name="address" name="address" id="address" class="materialize-textarea" data-length="120"></textarea>
-            <label for="address">Address</label>
+            <label for="address">Customer Address</label>
+          </div>
+
+          <div class="input-field col s12">
+            <input type="text" readonly="readonly"  value="<?php echo $price; ?>" name="price1" id="price1" data-length="120">
+            <label for="address">Total Price C$</label>
           </div>
           <div class="input-field col s12">
-            <button type="submit" name="bookevent" class="waves-effect waves-light btn light-blue">Book Event</button>
+            <input type="hidden"  value="<?php echo $hours; ?>" name="duration1" id="duration1" data-length="120">
+            
+          </div>
+          <div class="input-field col s12">
+            <input type="hidden"  value="<?php echo $id; ?>" name="eventid" id="eventidd" data-length="120">
+            
+          </div>
+          <div class="input-field col s12">
+            <button type="submit" name="bookevent" class="waves-effect waves-light btn light-blue">Proceed to Checkout</button>
           </div>
         </div>
       </form>
     </div>
   </div>
+
+<script type="text/javascript">
+  function price(){
+    var from_date=new Date(document.getElementById("fromDate").value);
+    var to_date= new Date(document.getElementById("toDate").value);
+    var duration= document.getElementById("duration1").value;
+    var pricee=document.getElementById("price1").value;
+    var diffTime = to_date.getTime()-from_date.getTime();
+    var diffdays=diffTime/(1000 * 3600 * 24);
+    
+    if((diffdays*24)>duration){
+      var hours_for_billing=(diffdays*24);
+      var bill_per_hour=pricee/duration;
+      var total_bill=hours_for_billing*bill_per_hour;
+      document.getElementById("price1").value=total_bill;
+    }
+  }
+</script>
 
   <?php include('./includes/footerScripts.php'); ?>
   <script>
@@ -90,29 +123,6 @@ if (!isset($_SESSION['user'])) {
     })
   </script>
 
-  <?php
-  if (isset($_POST['bookevent'])) {
-    $fromDate = mysqli_real_escape_string($conn, $_POST['fromDate']);
-    $toDate = mysqli_real_escape_string($conn, $_POST['toDate']) ? mysqli_real_escape_string($conn, $_POST['toDate']) : '';
-    $address = $_POST['address'];
-    $userId = $_SESSION['userId'];
-    $eventId = $_GET['eventid'];
-
-    if (empty($fromDate) || empty($address)) {
-      showErrorSuccessModel(0, 'All Fields are mendatory.');
-    } else {
-
-      $bookEvent = "insert into bookings (userId,event,fromDate,toDate,address) 
-                      values ('$userId','$eventId','$fromDate','$toDate','$address')";
-      $runEvents = mysqli_query($conn, $bookEvent);
-      if ($runEvents) {
-        showErrorSuccessModel(1, 'Event Booked. We will contact you soon.');
-      } else {
-        showErrorSuccessModel(0, '');
-      }
-    }
-  }
-  ?>
 
 </body>
 
