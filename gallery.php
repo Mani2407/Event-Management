@@ -2,11 +2,9 @@
 <html lang="en">
 
 <head>
-  <?php include('./includes/head.php');
-  include('./db/db.php');
-include('./functions/functions.php');
-session_start(); ?>
-
+  <?php 
+  session_start();
+  include('./includes/head.php'); ?>
   <style>
     .card div img{
       height: 300px;
