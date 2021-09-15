@@ -1,7 +1,8 @@
 <?php
 session_start();
 include('db/db.php');
-if (!isset($_SESSION['admin'])) {
+if (!isset($_SESSION['admin']))
+{
   echo "<script> window.open('login.php','_self')</script>";
 }
 ?>
