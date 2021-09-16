@@ -5,6 +5,59 @@ include('./functions/functions.php');
 if (!isset($_SESSION['userId'])) {
   echo "<script> window.open('login.php','_self')</script>";
 }
+
+require_once ('stripe.php');
+if(isset($_POST['stripeToken'])){
+    \Stripe\Stripe::setVerifySslCerts(false);
+
+    $token=$_POST['stripeToken'];
+
+    $data=\Stripe\Charge::create(array(
+      "amount"=>$_SESSION['total_price']*100,
+      "currency"=>"cad",
+      "description"=>"Catering Bookings",
+      "source"=>$token,
+    ));
+
+    $chargeJson = $data->jsonSerialize();
+
+    if($chargeJson['amount_refunded'] == 0 && empty($chargeJson['failure_code']) && $chargeJson['paid'] == 1 && $chargeJson['captured'] == 1){
+
+        $transactionID = $chargeJson['balance_transaction'];
+        $paidAmount = $chargeJson['amount'];
+        $paidCurrency = $chargeJson['currency'];
+        $payment_status = $chargeJson['status'];
+        $payment_date = date("Y-m-d H:i:s");
+        $dt_tm = date('Y-m-d H:i:s');
+
+
+        if($payment_status == 'succeeded'){
+            $ordStatus = 'success';
+
+         $fromDate=$_SESSION['fromDate'];
+         $toDate= $_SESSION['toDate'];
+         $address= $_SESSION['address'];
+         $userId= $_SESSION['userId'];
+         $eventId= $_SESSION['eventId'];
+         $total_price= $_SESSION['total_price'];
+         $num_dishes = $_SESSION['num_dishes'];
+
+        
+         $bookcatering = "insert into catering_bookings (cid,caterings_id,from_date,to_date,address,total_price,num_dishes,`payment_status`) 
+         values ('$userId','$eventId','$fromDate','$toDate','$address','$total_price','$num_dishes','Completed')";
+        $runEvents = mysqli_query($conn, $bookcatering);
+        if ($runEvents) {
+          showErrorSuccessModel(1, 'Catering Booked. We will contact you soon.');
+          echo "<script>window.location.href='caterings.php'</script>";
+        }
+
+    }
+
+  }
+}
+
+
+
 ?>
 
 <!DOCTYPE html>
@@ -28,7 +81,7 @@ if (!isset($_SESSION['userId'])) {
         $price=$rowEvent['price'];
         $hours=1;
       }
-      ?>
+      ?> 
       <form action="catering_payment.php" method="post" enctype="multipart/form-data">
         <h4>Book <span class="green-text"><?php echo $name; ?></span> Catering- Price C$<?php echo strval($price) ; ?></h4>
         <div class="input-field col s6">
@@ -43,7 +96,7 @@ if (!isset($_SESSION['userId'])) {
             <div class="input-field col s12">
               <div class="row" id="dates">
                 <div class="input-field col s12" id="fromDateDiv">
-                  <input type="date" name="fromDate" id="fromDate">
+                  <input type="date" name="fromDate" id="fromDate" required ="required">
                   <label for="fromDate">Date</label>
                 </div>
                 <div class="input-field col s6" id="toDateDiv" style="display: none;">
@@ -54,8 +107,8 @@ if (!isset($_SESSION['userId'])) {
             </div>
           </div>
           <div class="input-field col s12">
-            <textarea name="address" name="address" id="address" class="materialize-textarea" data-length="120"></textarea>
-            <label for="address">Customer Address</label>
+           <textarea name="address" name="address" id="address" class="materialize-textarea" data-length="120"> </textarea>
+            <label for="address">Customer Address & Requirements</label> 
           </div>
           <div class="input-field col s12">
             <input type="number"  value="1" onkeyup="price()" name="num_dishes" id="num_dishes" min="1" max="1000">            
@@ -82,7 +135,12 @@ if (!isset($_SESSION['userId'])) {
 <script type="text/javascript">
   function price(){
     var from_date=new Date(document.getElementById("fromDate").value);
-    var to_date= new Date(document.getElementById("toDate").value);
+    var to_date=document.getElementById("toDate").value;
+    if (to_date==''){
+      to_date=from_date;
+    }else{
+      var to_date=new Date(document.getElementById("to_date").value);
+    }
     var duration= document.getElementById("duration1").value;
     var pricee=document.getElementById("price_org").value;
     const num_dishes=document.getElementById("num_dishes").value;
@@ -92,8 +150,10 @@ if (!isset($_SESSION['userId'])) {
       var hours_for_billing=(diffdays*24);
       var bill_per_hour=pricee/duration;
       var total_bill=hours_for_billing*bill_per_hour;
-      document.getElementById("price1").value=total_bill*num_dishes;
+    }else{
+      var total_bill=pricee;
     }
+    document.getElementById("price1").value=total_bill*num_dishes;
   }
 </script>
 
