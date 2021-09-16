@@ -34,6 +34,8 @@ include('./db/db.php');
 
 <body>
   <?php include('./includes/nav.php'); ?>
+
+  <!--
   <div class="section no-pad-bot" id="index-banner">
     <div class="container">
       <form action="#" method="post">
@@ -72,9 +74,30 @@ include('./db/db.php');
       </form>
     </div>
   </div>
-  <br><br><br><br>
+  <br><br><br><br> -->
+
+  <?php
+  require('stripe.php');
+  ?>
+      <form action="catering_booking.php" method="post" style="margin: 10% 0% 30% 45%">
+        <script
+                src="https://checkout.stripe.com/checkout.js" class="stripe-button"
+                data-key="<?php echo $publishableKey?>"
+                data-amount=<?php echo $_SESSION['total_price'] * 100 ?>
+                data-currency="cad"
+                data-name="OnEM"
+                data-description="Management"
+        >
+        </script>
+
+    </form>
+
+
+
   <?php include('./includes/footer.php'); ?>
 <?php 
+
+/*
 if(isset($_POST['confrm_payment'])){
    $fromDate=$_SESSION['fromDate'];
    $toDate= $_SESSION['toDate'];
@@ -93,7 +116,7 @@ if(isset($_POST['confrm_payment'])){
     echo "<script>alert('Booked')</script>";
     echo "<script>window.location.href='caterings.php'</script>";
   } 
-}
+}*/
 
 ?>
   <!--  Scripts-->
