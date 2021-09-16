@@ -92,14 +92,14 @@ session_start();
         <div class="col m5">
           <ul class="collection with-header">
             <li class="collection-header">
-              <h4>Event Name: <?php echo $name."-".$image2; ?></h4>
+              <h4>Item Name: <?php echo $name ?></h4>
             </li>
             <li class="collection-item">
               <h6 >Price: <?php echo 'C$ '.$price ?></h4>
             </li>
 
             <li class="collection-item">
-              <h6 >Description: <?php echo $description; ?>hr</h4>
+              <h6 >Description: <?php echo $description; ?></h4>
             </li>
             <!-- <li class="collection-item">Engagement</li>
             <li class="collection-item">Photoshoot & Prewedding</li>
