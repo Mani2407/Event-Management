@@ -11,12 +11,58 @@ session_start();
 <head>
   <?php include('./includes/head.php'); ?>
 </head>
+<style>
+    body{
+        height:80%; 
+        background-image : url('images/decor.jpg');
+        height:80%;
+        background-position: center;
+        background-repeat: no-repeart;
+        background-size:cover;
+    }
+    #search_item1{
+      border-color:white;
+      color:black;
+      background-color:white;
+      border-radius:10px;
+    }
+    #search_item1::placeholder{
+      color:black;
+      font-size:18px;
+      text-align:center;
 
+    }
+
+    .card-image{
+      height:300px;
+    }
+    </style>
+<script type="text/javascript">
+  function search_item(){
+
+        var item_search =$("#search_item1").val();
+        $.ajax({
+          type:"POST",
+          url:"item_search.php",
+          data:{item_search:item_search},
+          success:function(ex){
+              $("#products").hide();
+              $("#products_search").html(ex)
+
+          }
+        });
+  }
+</script>
 <body>
   <?php include('./includes/nav.php'); ?>
   <div class="section no-pad-bot" id="index-banner">
     <div class="container">
-      <div class="row">
+      
+      <input type="text" name="search" id="search_item1" class="form-control" placeholder="Search Event" onkeyup="search_item()">
+      <div class="row" >
+        <div id="products_search">
+          <div id="products">
+    
       <?php
           $getEvents = "select * from events";
           $runEvents = mysqli_query($conn, $getEvents);
@@ -41,6 +87,8 @@ session_start();
               ";
           }
           ?>
+        </div>
+      </div>
       </div>
     </div>
   </div>
